@@ -1,5 +1,6 @@
 package com.example.android.sunshine.app;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -76,15 +78,27 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                 "Tomorrow - poopy - 34/89",
                 "Christmas - dumb - 10/99"
         };
-        List<String> weekForecast = new ArrayList<String>(Arrays.asList(data));
+        final List<String> weekForecast = new ArrayList<String>(Arrays.asList(data));
       //  String[] queryResults = FetchWeatherTask().execute("00901");
 
         mForecastAdapter = new ArrayAdapter<String>(getActivity(),R.layout.list_item_forcast,R.id.list_item_forcast_textView, weekForecast);
 
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        ListView listview = (ListView) rootView.findViewById(R.id.listview_forecast);
-        listview.setAdapter(mForecastAdapter);
+        ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
+        listView.setAdapter(mForecastAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                String toastText = mForecastAdapter.getItem(i);
+                //Toast toasty = Toast.makeText(getActivity(),toastText , Toast.LENGTH_SHORT);
+                //toasty.show();
+                Intent detailIntent = new Intent(getActivity(), DetailActivity.class);
+                    detailIntent.putExtra(detailIntent.EXTRA_TEXT, toastText);
+                startActivity(detailIntent);
+            }
+        });
         return rootView;
     }
 
@@ -184,7 +198,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
                 resultStrs[i] = day + " - " + description + " - " + highAndLow;
             }
 
-           
+
             return resultStrs;
 
         }
