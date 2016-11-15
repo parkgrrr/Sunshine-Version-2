@@ -19,15 +19,20 @@ package com.example.android.sunshine.app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.ShareActionProvider;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 public class DetailActivity extends ActionBarActivity {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,8 +75,12 @@ public class DetailActivity extends ActionBarActivity {
      */
     public static class DetailFragment extends Fragment {
 
+        private String weather;
+        private static final String LOG_TAG = DetailFragment.class.getSimpleName();
         public DetailFragment() {
+            setHasOptionsMenu(true);
         }
+
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -79,9 +88,30 @@ public class DetailActivity extends ActionBarActivity {
 
             View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
             Intent intent = getActivity().getIntent();
-            String weather = intent.getStringExtra(intent.EXTRA_TEXT);
-            ((TextView)rootView.findViewById(R.id.detail_text)).setText(weather);
+            weather = intent.getStringExtra(intent.EXTRA_TEXT);
+            ((TextView) rootView.findViewById(R.id.detail_text)).setText(weather);
             return rootView;
+        }
+
+        @Override
+        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+            inflater.inflate(R.menu.detailfragment, menu);
+
+            MenuItem menuItem = menu.findItem(R.id.action_share);
+
+            ShareActionProvider shareProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+            if(shareProvider != null){
+                shareProvider.setShareIntent(createShareActionIntent());
+            } else {
+                Log.d(LOG_TAG, "Share Action Provider is null?");
+            }
+        }
+        private Intent createShareActionIntent(){
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+            shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+            shareIntent.putExtra(Intent.EXTRA_TEXT, weather + " #SunshineApp");
+            return shareIntent;
         }
     }
 }

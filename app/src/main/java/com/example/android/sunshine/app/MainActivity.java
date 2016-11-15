@@ -72,11 +72,10 @@ public class MainActivity extends ActionBarActivity {
             String location = settings.getString(getString(R.string.pref_location_key),getString(R.string.pref_location_default));
             Uri.Builder builder = new Uri.Builder();
             builder.scheme("geo");
-           // builder.query("0,0");
             builder.appendQueryParameter("q",location);
             Uri mapLocation = builder.build();
-
             showMap(mapLocation);
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
