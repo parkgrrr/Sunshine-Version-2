@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array
+        name="temp_units_entries">
+        <item>Fahrenheit</item>
+        <item>Celsius</item>
+    </string-array>
+    <string-array
+        name="temp_units_entry_Values">
+        <item>f</item>
+        <item>c</item>
+    </string-array>
+</resources>

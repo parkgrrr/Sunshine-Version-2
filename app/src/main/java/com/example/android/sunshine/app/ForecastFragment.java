@@ -1,9 +1,11 @@
 package com.example.android.sunshine.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,7 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
 
 import org.json.JSONArray;
@@ -29,8 +30,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by pstev on 10/28/2016.
@@ -39,9 +38,21 @@ import java.util.List;
 public class ForecastFragment extends android.support.v4.app.Fragment {
 
     public ArrayAdapter<String> mForecastAdapter;
-    EditText mEdit;
     public ForecastFragment() {
 
+    }
+
+    private void updateWeather(){
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = settings.getString(getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default));
+        final AsyncTask dataTask = new FetchWeatherTask().execute(location);
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        updateWeather();
     }
 
     @Override
@@ -62,26 +73,23 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            final AsyncTask dataTask = new FetchWeatherTask().execute("00901");
+            updateWeather();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        //dummy data to test the ui
 
-        String[] data = {
-                "Today - Sunny - 63/80",
-                "Tomorrow - poopy - 34/89",
-                "Christmas - dumb - 10/99"
-        };
-        final List<String> weekForecast = new ArrayList<String>(Arrays.asList(data));
-      //  String[] queryResults = FetchWeatherTask().execute("00901");
-
-        mForecastAdapter = new ArrayAdapter<String>(getActivity(),R.layout.list_item_forcast,R.id.list_item_forcast_textView, weekForecast);
+        mForecastAdapter =
+                new ArrayAdapter<String>(
+                        getActivity(),
+                        R.layout.list_item_forcast,
+                        R.id.list_item_forcast_textView,
+                        new ArrayList<String>());
 
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
@@ -92,8 +100,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String toastText = mForecastAdapter.getItem(i);
-                //Toast toasty = Toast.makeText(getActivity(),toastText , Toast.LENGTH_SHORT);
-                //toasty.show();
+
                 Intent detailIntent = new Intent(getActivity(), DetailActivity.class);
                     detailIntent.putExtra(detailIntent.EXTRA_TEXT, toastText);
                 startActivity(detailIntent);
@@ -121,6 +128,14 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
          */
         private String formatHighLows(double high, double low) {
             // For presentation, assume the user doesn't care about tenths of a degree.
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String Units = settings.getString(getString(R.string.pref_units_key), getString(R.string.pref_units_default));
+            //formats temp to Fahrenheit if setting is set
+            if (Units.equals("f")){
+                high = 9 * (high / 5) + 32;
+                low =  9 * (low / 5) + 32;
+            }
+
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
 
@@ -224,6 +239,7 @@ public class ForecastFragment extends android.support.v4.app.Fragment {
             // Will contain the raw JSON response as a string.
             String forecastJsonStr = null;
             int numDays = 7;
+
 
             try {
                 // Construct the URL for the OpenWeatherMap query

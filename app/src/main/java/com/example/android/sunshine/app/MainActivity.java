@@ -1,7 +1,10 @@
 package com.example.android.sunshine.app;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +24,14 @@ public class MainActivity extends ActionBarActivity {
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
     private GoogleApiClient client;
+
+    public void showMap(Uri geoLocation) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(geoLocation);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,8 +62,21 @@ public class MainActivity extends ActionBarActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_settings){
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
+        }
+
+        if(id == R.id.action_map_view){
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+            String location = settings.getString(getString(R.string.pref_location_key),getString(R.string.pref_location_default));
+            Uri.Builder builder = new Uri.Builder();
+            builder.scheme("geo");
+           // builder.query("0,0");
+            builder.appendQueryParameter("q",location);
+            Uri mapLocation = builder.build();
+
+            showMap(mapLocation);
         }
 
         return super.onOptionsItemSelected(item);
